@@ -500,6 +500,17 @@ function Border:_open_window()
     return
   end
 
+  -- Safety net: if size ended up invalid (e.g. parent resized to 0),
+  -- skip opening rather than crashing with "expected positive Integer".
+  if
+    not self.win_config.width
+    or self.win_config.width < 1
+    or not self.win_config.height
+    or self.win_config.height < 1
+  then
+    return
+  end
+
   self.win_config.noautocmd = true
   self.winid = vim.api.nvim_open_win(self.bufnr, false, self.win_config)
   self.win_config.noautocmd = nil
@@ -602,6 +613,14 @@ function Border:_relayout()
   self.win_config.bufpos = position.bufpos
 
   internal.size = calculate_size(self)
+
+  -- Guard: nvim_open_win / nvim_win_set_config require positive integers.
+  -- This can happen when the parent popup is being laid out before its size
+  -- is fully resolved (e.g. trouble window resized to a very small height).
+  if internal.size.width < 1 or internal.size.height < 1 then
+    return
+  end
+
   self.win_config.width = internal.size.width
   self.win_config.height = internal.size.height
 
