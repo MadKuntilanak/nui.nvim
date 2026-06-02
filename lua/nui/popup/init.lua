@@ -164,6 +164,10 @@ function Popup:_open_window()
     return
   end
 
+  if self.win_config.height <= 0 then
+    return
+  end
+
   self.win_config.noautocmd = true
   self.winid = vim.api.nvim_open_win(self.bufnr, self._.win_enter, self.win_config)
   self.win_config.noautocmd = nil
